@@ -27,7 +27,7 @@ export default function LoginPage() {
             if (!res.ok) {
                 setError(data.error || "Something went wrong");
             } else {
-                // Redirect to home after login
+                localStorage.setItem("userEmail", email);  // ← add this line
                 window.location.href = "/";
             }
         } catch {
