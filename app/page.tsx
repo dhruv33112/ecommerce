@@ -18,10 +18,10 @@ export default function Home() {
           <a href="#contact">Contact</a>
         </nav>
         <div className="icons">
-          <a href=""><img className="icon" src="https://cdn-icons-png.flaticon.com/128/622/622669.png" alt="" /></a>
+          <a href=""><img  className="icon" src="https://cdn-icons-png.flaticon.com/128/622/622669.png" alt="" /></a>
           <a href="/login_route"><img className="icon" src="https://cdn-icons-png.flaticon.com/128/456/456212.png" alt="" /></a>
           <Link href="/cart_route">
-            <img className="nav_img" src="https://cdn-icons-png.flaticon.com/128/3144/3144456.png" alt="cart" />
+            <img className="icon" src="https://cdn-icons-png.flaticon.com/128/3144/3144456.png" alt="cart" />
           </Link>
         </div>
       </header>
@@ -40,8 +40,8 @@ export default function Home() {
 
       <div className="hello">
 
-        <Link href="/products_route">Product</Link>
-        <Link href="/todo">TODO</Link>
+        {/* <Link href="/products_route">Product</Link>
+        <Link href="/todo">TODO</Link> */}
 
       </div>
 

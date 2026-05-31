@@ -1,5 +1,7 @@
-import { connectDB } from "@/lib/connectDB";
-import User from "@/models/schema";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { connectDB } from "@/app/lib/connectDB";
+import User from "@/app/model/schema";
 
 export async function POST(request) {
     try {
@@ -16,11 +18,13 @@ export async function POST(request) {
             return Response.json({ error: "Invalid email or password" }, { status: 401 });
         }
 
-        if (user.password !== password) {
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
             return Response.json({ error: "Invalid email or password" }, { status: 401 });
         }
 
-        return Response.json({ message: "Login successful", user: { id: user._id, email: user.email } });
+        const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET || "shopeasy_secret", { expiresIn: "7d" });
+        return Response.json({ message: "Login successful", token, user: { id: user._id, email: user.email } });
 
     } catch (error) {
         console.error(error);

@@ -16,7 +16,7 @@ export default function LoginPage() {
         setLoading(true);
 
         try {
-            const res = await fetch("http://localhost:5000/login", {
+            const res = await fetch("/api/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
@@ -27,7 +27,8 @@ export default function LoginPage() {
             if (!res.ok) {
                 setError(data.error || "Something went wrong");
             } else {
-                localStorage.setItem("userEmail", email);  // ← add this line
+                localStorage.setItem("userEmail", email);
+                localStorage.setItem("token", data.token);
                 window.location.href = "/";
             }
         } catch {

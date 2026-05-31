@@ -1,6 +1,6 @@
 require("dotenv").config({ path: "./.env.local" });
 const mongoose = require("mongoose");
-const Product = require("./models/productSchema");
+const Product = require('./model/productSchema');
 
 mongoose.connect(process.env.MONGODB_URI).then(async () => {
     console.log("Connected");

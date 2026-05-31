@@ -1,5 +1,6 @@
-import { connectDB } from "@/lib/connectDB";
-import User from "@/models/schema";
+import bcrypt from "bcryptjs";
+import { connectDB } from "@/app/lib/connectDB";
+import User from "@/app/model/schema";
 
 export async function POST(request) {
     try {
@@ -16,7 +17,8 @@ export async function POST(request) {
             return Response.json({ error: "User already exists" }, { status: 400 });
         }
 
-        const newUser = await User.create({ email, password });
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = await User.create({ email, password: hashedPassword });
 
         return Response.json({ message: "Signup successful", user: { id: newUser._id, email: newUser.email } }, { status: 201 });
 

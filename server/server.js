@@ -2,8 +2,10 @@ require("dotenv").config({ path: "./.env.local" });
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
-
-
+const Product = require("./model/productSchema");
+const Cart = require("./model/cartSchema");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 const app = express();
 
 app.use(cors());
@@ -13,7 +15,6 @@ mongoose
     .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/shopeasy")
     .then(() => console.log("MongoDB connected"))
     .catch((err) => console.error("DB error:", err));
-
 
 const UserSchema = new mongoose.Schema(
     {
@@ -32,10 +33,10 @@ const UserSchema = new mongoose.Schema(
     { timestamps: true }
 );
 
-const User = mongoose.model("form", UserSchema); // was: mongoose.model("form", formSchema) — formSchema was undefined
+const User = mongoose.model("form", UserSchema);
 
 
-
+// ── SIGNUP ──────────────────────────────────────────────────
 app.post("/signup", async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -49,8 +50,8 @@ app.post("/signup", async (req, res) => {
             return res.status(400).json({ error: "User already exists" });
         }
 
-        
-        const user = await User.create({ email, password });
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = await User.create({ email, password: hashedPassword });
 
         res.status(201).json({
             message: "Signup successful",
@@ -63,7 +64,7 @@ app.post("/signup", async (req, res) => {
 });
 
 
-// ── LOGIN ───────────────────────────────────────────────────────────────────
+// ── LOGIN ───────────────────────────────────────────────────
 app.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -77,14 +78,15 @@ app.post("/login", async (req, res) => {
             return res.status(401).json({ error: "Invalid email or password" });
         }
 
-        if (user.password !== password) { 
-
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
             return res.status(401).json({ error: "Invalid email or password" });
-        } 
-        
+        }
 
+        const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET || "shopeasy_secret", { expiresIn: "7d" });
         res.json({
             message: "Login successful",
+            token,
             user: { id: user._id, email: user.email },
         });
     } catch (err) {
@@ -93,11 +95,6 @@ app.post("/login", async (req, res) => {
     }
 });
 
-
-app.listen(5000, () => console.log("Server running on port 5000"));
-
-const Product = require("./models/productSchema");
-const Cart    = require("./models/cartSchema");
 
 // ── GET all products ────────────────────────────────────────
 app.get("/products", async (req, res) => {
@@ -108,6 +105,7 @@ app.get("/products", async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 });
+
 
 // ── ADD to cart ─────────────────────────────────────────────
 app.post("/cart/add", async (req, res) => {
@@ -137,6 +135,7 @@ app.post("/cart/add", async (req, res) => {
     }
 });
 
+
 // ── GET cart ────────────────────────────────────────────────
 app.get("/cart/:userEmail", async (req, res) => {
     try {
@@ -146,6 +145,7 @@ app.get("/cart/:userEmail", async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 });
+
 
 // ── REMOVE item from cart ───────────────────────────────────
 app.delete("/cart/remove", async (req, res) => {
@@ -164,3 +164,6 @@ app.delete("/cart/remove", async (req, res) => {
         res.status(500).json({ error: "Server error" });
     }
 });
+
+
+app.listen(5000, () => console.log("Server running on port 5000"));
